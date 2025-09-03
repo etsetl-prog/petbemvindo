@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PataNaEstrada 🐾 | Viaje com seu pet</title>
+  <meta name="description" content="Encontre locais pet-friendly em sua viagem. Restaurantes, hotéis, postos e parques que amam pets.">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+    }
+
+    /* ==================== */
+    /* CABEÇALHO */
+    /* ==================== */
+    header {
+      background: linear-gradient(135deg, #4a7c59, #3a5a40);
+      color: white;
+      text-align: center;
+      padding: 1.8rem 1rem;
+    }
+
+    header h1 {
+      font-size: 2.3rem;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-top: 0.4rem;
+    }
+
+    /* ==================== */
+    /* FILTROS DO MAPA */
+    /* ==================== */
+    .filters-container {
+      max-width: 1200px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .filters-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filters {
+      display: inline-flex;
+      gap: 10px;
+      background: white;
+      border-radius: 50px;
+      padding: 8px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .filter-btn {
+      background: #f8f9fa;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      color: #4a5568;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-btn.active {
+      background: #4a7c59;
+      color: white;
+      font-weight: 500;
+    }
+
+    /* ==================== */
+    /* MAPA */
+    /* ==================== */
+    .map-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem 2rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100%;
+      height: 650px;
+      border-radius: 12px;
+    }
+
+    /* ==================== */
+    /* DICAS DO DIA */
+    /* ==================== */
+    .tips-section {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .tip-card {
+      background: linear-gradient(135deg, #d4a574, #c08b57);
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .tip-title {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tip-content {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* ==================== */
+    /* LUGARES AMIGOS */
+    /* ==================== */
+    .places-section {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #2d3748;
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+    }
+
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .place-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+      padding: 1rem;
+    }
+
+    .place-name {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.3rem;
+    }
+
+    .place-type {
+      font-size: 0.9rem;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+
+    .place-desc {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 0.8rem;
+    }
+
+    .feedback {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .btn-like, .btn-dislike {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-like:hover {
+      transform: scale(1.2);
+      color: #4a7c59;
+    }
+
+    .btn-dislike:hover {
+      transform: scale(1.2);
+      color: #e74c3c;
+    }
+
+    .btn-like {
+      color: #4a7c59;
+    }
+
+    .btn-dislike {
+      color: #e74c3c;
+    }
+
+    /* ==================== */
+    /* RECOMENDADOS */
+    /* ==================== */
+    .recommend-filters {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-reco {
+      background: #f8f9fa;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      color: #4a5568;
+      cursor: pointer;
+    }
+
+    .filter-reco.active {
+      background: #d4a574;
+      color: white;
+      font-weight: 500;
+    }
+
+    .recommendations {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .recommend-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+
+    .recommend-name {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.3rem;
+    }
+
+    .recommend-type {
+      font-size: 0.9rem;
+      color: #4a7c59;
+      margin-bottom: 0.5rem;
+    }
+
+    .recommend-desc {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* ==================== */
+    /* RODAPÉ */
+    /* ==================== */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: #1a202c;
+      color: #e2e8f0;
+      margin-top: 2rem;
+    }
+
+    footer p {
+      font-size: 0.95rem;
+    }
+
+    /* ==================== */
+    /* MARCADORES COM EMOJIS */
+    /* ==================== */
+    .custom-marker {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .marker-emoji {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 18px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+      border: 2px solid white;
+      text-align: center;
+      line-height: 1;
+      transition: all 0.3s ease;
+    }
+
+    .marker-emoji:hover {
+      transform: scale(1.2);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CABEÇALHO -->
+  <header>
+    <h1>🐾 PataNaEstrada</h1>
+    <p>Seu guia de viagens com seu pet pelo Brasil</p>
+  </header>
+
+  <!-- FILTROS DO MAPA -->
+  <div class="filters-container">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">📍 Todos</button>
+      <button class="filter-btn" data-filter="bar-restaurante">🍽️ Bar e Restaurante</button>
+      <button class="filter-btn" data-filter="rodovia-br">🛣️ Rodovia BR</button>
+      <button class="filter-btn" data-filter="shopping">🛒 Shopping</button>
+      <button class="filter-btn" data-filter="hotel">🛏️ Hotéis & Pousadas</button>
+      <button class="filter-btn" data-filter="clinica">🏥 Clínicas</button>
+      <button class="filter-btn" data-filter="banho-tosa">🛁 Banho & Tosa</button>
+      <button class="filter-btn" data-filter="acessorios">🛍️ Acessórios</button>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
+
+  <!-- DICAS DO DIA -->
+  <div class="tips-section">
+    <div class="tip-card">
+      <h3 class="tip-title">💡 Dica do Dia</h3>
+      <p class="tip-content">Leve sempre água, tigela portátil e uma toalha para seu pet. Evite viagens nas horas mais quentes do dia!</p>
+    </div>
+  </div>
+
+  <!-- LUGARES AMIGOS -->
+  <div class="places-section">
+    <h2 class="section-title">🏡 Lugares Amigos</h2>
+    <div class="places-grid" id="places-list">
+      <!-- Preenchido dinamicamente -->
+    </div>
+  </div>
+
+  <!-- RECOMENDADOS -->
+  <div class="info-section">
+    <h2 class="section-title">🌟 Recomendados para sua viagem</h2>
+
+    <div class="recommend-filters">
+      <button class="filter-reco active" data-reco="all">Todos</button>
+      <button class="filter-reco" data-reco="bar-restaurante">🍽️ Bar e Restaurante</button>
+      <button class="filter-reco" data-reco="rodovia-br">🛣️ Rodovia BR</button>
+      <button class="filter-reco" data-reco="shopping">🛒 Shopping</button>
+      <button class="filter-reco" data-reco="hotel">🛏️ Hotéis & Pousadas</button>
+      <button class="filter-reco" data-reco="clinica">🏥 Clínicas</button>
+      <button class="filter-reco" data-reco="banho-tosa">🛁 Banho & Tosa</button>
+      <button class="filter-reco" data-reco="acessorios">🛍️ Acessórios</button>
+    </div>
+
+    <div class="recommendations" id="recommendations-list">
+      <!-- Preenchido dinamicamente -->
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <footer>
+    <p><strong>PataNaEstrada</strong> – Feito com amor para tutores e seus pets viajantes.</p>
+    <p>© 2025 • Um projeto para tornar o Brasil mais pet-friendly.</p>
+  </footer>
+
+  <!-- LEAFLET JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+
+  <script>
+    // === ÍCONES COM EMOJIS E CORES POR CATEGORIA ===
+    const icons = {
+      'bar-restaurante': L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #4a7c59;">🍽️</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      'rodovia-br': L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #2c3e50;">🛣️</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      shopping: L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #8e44ad;">🛒</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      hotel: L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #d4a574;">🛏️</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      clinica: L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #e74c3c;">🏥</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      'banho-tosa': L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #3498db;">🛁</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      }),
+      acessorios: L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-emoji" style="background: #9b59b6;">🛍️</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      })
+    };
+
+    // === MAPA ===
+    const map = L.map('map').setView([-23.39, -46.3], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let markers = [];
+
+    // === LOCAIS (com nova classificação) ===
+    const locais = [
+      {
+        nome: "Chalé da Pamonha",
+        tipo: "rodovia-br",
+        descricao: "Restaurante pet-friendly na Rodovia Presidente Dutra. Área externa ampla, cardápio especial para pets.",
+        posicao: [-23.377615, -46.251841]
+      },
+      {
+        nome: "Chalé da Pamonha",
+        tipo: "rodovia-br",
+        descricao: "Unidade na pista sentido São Paulo. Área de descanso com grama e bebedouro.",
+        posicao: [-23.387054, -46.273241]
+      },
+      {
+        nome: "Hospital Veterinário Faccioni 24h",
+        tipo: "clinica",
+        descricao: "Clínica veterinária de emergência com atendimento 24h para pets.",
+        posicao: [-23.451796, -46.559491]
+      }
+      // Nenhum local em shopping, hotel, etc (por enquanto)
+    ];
+
+    // === ADICIONA MARCADORES NO MAPA ===
+    function addMarkers(filter) {
+      markers.forEach(m => m.remove());
+      markers = [];
+
+      locais.forEach(local => {
+        // Se for "all", mostra todos. Se não, filtra
+        if (filter !== 'all' && local.tipo !== filter) return;
+
+        const icon = icons[local.tipo];
+        const marker = L.marker(local.posicao, { icon }).addTo(map);
+        marker.bindPopup(`
+          <strong>${local.nome}</strong><br>
+          <small><b>Tipo:</b> ${local.tipo === 'bar-restaurante' ? '🍽️ Bar e Restaurante' : 
+                                  local.tipo === 'rodovia-br' ? '🛣️ Rodovia BR' : 
+                                  local.tipo === 'shopping' ? '🛒 Shopping' : 
+                                  local.tipo === 'hotel' ? '🛏️ Hotel / Pousada' : 
+                                  local.tipo === 'clinica' ? '🏥 Clínica' : 
+                                  local.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
+                                  '🛍️ Acessórios'}</small><br>
+          ${local.descricao}
+        `);
+        markers.push(marker);
+      });
+    }
+
+    // === FILTROS DO MAPA ===
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.getAttribute('data-filter');
+        addMarkers(filter);
+      });
+    });
+
+    // === LUGARES AMIGOS (com Like/Dislike) ===
+    const places = [
+      { 
+        nome: "Chalé da Pamonha", 
+        tipo: "🍽️ Bar e Restaurante", 
+        descricao: "Ambiente externo com cardápio especial para pets." 
+      },
+      { 
+        nome: "Chalé da Pamonha", 
+        tipo: "🍽️ Bar e Restaurante", 
+        descricao: "Área de descanso com grama e bebedouro." 
+      },
+      { 
+        nome: "Hospital Veterinário Faccioni 24h", 
+        tipo: "🏥 Clínica Veterinária", 
+        descricao: "Atendimento 24h para emergências com equipamentos modernos." 
+      }
+    ];
+
+    function renderPlaces() {
+      const container = document.getElementById('places-list');
+      container.innerHTML = '';
+
+      places.forEach((place, index) => {
+        const likes = localStorage.getItem(`like-${index}`) || "0";
+        const dislikes = localStorage.getItem(`dislike-${index}`) || "0";
+
+        const card = document.createElement('div');
+        card.className = 'place-card';
+        card.innerHTML = `
+          <div class="place-name">${place.nome}</div>
+          <div class="place-type">${place.tipo}</div>
+          <div class="place-desc">${place.descricao}</div>
+          <div class="feedback">
+            <button class="btn-like" data-index="${index}" title="Gostei">👍 <span class="count-like">${likes}</span></button>
+            <button class="btn-dislike" data-index="${index}" title="Não gostei">👎 <span class="count-dislike">${dislikes}</span></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Eventos de curtida
+      document.querySelectorAll('.btn-like').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const index = this.getAttribute('data-index');
+          let count = parseInt(localStorage.getItem(`like-${index}`) || "0");
+          count++;
+          localStorage.setItem(`like-${index}`, count.toString());
+          this.querySelector('.count-like').textContent = count;
+        });
+      });
+
+      document.querySelectorAll('.btn-dislike').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const index = this.getAttribute('data-index');
+          let count = parseInt(localStorage.getItem(`dislike-${index}`) || "0");
+          count++;
+          localStorage.setItem(`dislike-${index}`, count.toString());
+          this.querySelector('.count-dislike').textContent = count;
+        });
+      });
+    }
+
+    // === RECOMENDADOS ===
+    const recomendados = [
+      { 
+        nome: "Chalé da Pamonha", 
+        tipo: "rodovia-br", 
+        descricao: "Ambiente externo pet-friendly com cardápio especial." 
+      },
+      { 
+        nome: "Chalé da Pamonha", 
+        tipo: "rodovia-br", 
+        descricao: "Área de descanso com grama e bebedouro." 
+      },
+      { 
+        nome: "Hospital Veterinário Faccioni 24h", 
+        tipo: "clinica", 
+        descricao: "Atendimento veterinário de emergência 24h." 
+      }
+    ];
+
+    function renderRecomendados(filter) {
+      const container = document.getElementById('recommendations-list');
+      container.innerHTML = '';
+
+      const filtered = recomendados.filter(item => {
+        // Mapeia "bar-restaurante" para não quebrar
+        if (filter === 'bar-restaurante') return item.tipo === 'rodovia-br'; // ou ajuste conforme necessidade
+        return filter === 'all' || item.tipo === filter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #718096;">Nenhum local encontrado.</p>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'recommend-card';
+        card.innerHTML = `
+          <div class="recommend-name">${item.nome}</div>
+          <div class="recommend-type">
+            ${item.tipo === 'bar-restaurante' || item.tipo === 'rodovia-br' ? '🍽️ Bar e Restaurante' : 
+              item.tipo === 'shopping' ? '🛒 Shopping' : 
+              item.tipo === 'hotel' ? '🛏️ Hotel / Pousada' : 
+              item.tipo === 'clinica' ? '🏥 Clínica' : 
+              item.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
+              '🛍️ Acessórios'}
+          </div>
+          <div class="recommend-desc">${item.descricao}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Eventos dos filtros de recomendados
+    document.querySelectorAll('.filter-reco').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-reco').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.getAttribute('data-reco');
+        renderRecomendados(filter);
+      });
+    });
+
+    // Inicializa tudo
+    addMarkers('all');
+    renderPlaces();
+    renderRecomendados('all');
+  </script>
+</body>
+</html>
