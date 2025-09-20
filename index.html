@@ -323,6 +323,16 @@
       transform: scale(1.2);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
     }
+
+    /* ANIMAÇÃO PARA ÍCONE MULTI-FUNÇÃO */
+    .marker-multi {
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
   </style>
 </head>
 <body>
@@ -450,6 +460,20 @@
         iconSize: [36, 36],
         iconAnchor: [18, 36],
         popupAnchor: [0, -36]
+      }),
+      multi: L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div class="marker-emoji marker-multi" style="background: #5d3a9b; font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding: 2px;">
+            <div style="grid-column: 1; grid-row: 1; justify-self: center; align-self: center;">🏥</div>
+            <div style="grid-column: 2; grid-row: 1; justify-self: center; align-self: center;">🛍️</div>
+            <div style="grid-column: 1; grid-row: 2; justify-self: center; align-self: center;">🛁</div>
+            <div style="grid-column: 2; grid-row: 2;"></div>
+          </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
       })
     };
 
@@ -480,9 +504,55 @@
         tipo: "clinica",
         descricao: "Clínica veterinária de emergência com atendimento 24h para pets.",
         posicao: [-23.451796, -46.559491]
-      }
-      // Nenhum local em shopping, hotel, etc (por enquanto)
+      },
+
+      // === NOVOS SHOPS ===
+      { nome: "Shopping Cidade Jardim", tipo: "shopping", descricao: "Shopping pet-friendly com praça de alimentação e áreas externas.", posicao: [-23.568044, -46.704308] },
+      { nome: "Metro Tatuape Magazine", tipo: "shopping", descricao: "Centro comercial com acesso fácil e espaço para pets.", posicao: [-23.541683, -46.576727] },
+      { nome: "Shopping Light", tipo: "shopping", descricao: "Local histórico com lojas e praça de alimentação pet-friendly.", posicao: [-23.546665, -46.638713] },
+      { nome: "Central Plaza Shopping", tipo: "shopping", descricao: "Shopping com praça de eventos e áreas permitidas para pets.", posicao: [-23.593246, -46.585194] },
+      { nome: "Cantareira Norte Shopping", tipo: "shopping", descricao: "Shopping na zona norte com acesso fácil e estacionamento pet.", posicao: [-23.445148, -46.723158] },
+      { nome: "Shopping Eldorado", tipo: "shopping", descricao: "Grande centro comercial com praça de alimentação pet-friendly.", posicao: [-23.572708, -46.695942] },
+      { nome: "Shopping Villa Lobos", tipo: "shopping", descricao: "Shopping moderno com áreas verdes e permitido pets na praça externa.", posicao: [-23.551090, -46.721977] },
+      { nome: "Shopping Pátio Paulista", tipo: "shopping", descricao: "Localizado na Paulista, com acesso fácil e lojas pet-friendly.", posicao: [-23.570711, -46.643444] },
+      { nome: "Shopping Aricanduva", tipo: "shopping", descricao: "Um dos maiores shoppings da América Latina, com áreas permitidas para pets.", posicao: [-23.565586, -46.505058] },
+      { nome: "Shopping Center Norte", tipo: "shopping", descricao: "Shopping com praça de alimentação e eventos pet-friendly.", posicao: [-23.517595, -46.617135] },
+      { nome: "Shopping Center 3", tipo: "shopping", descricao: "Shopping com lojas e praça de alimentação acessível a pets.", posicao: [-23.557562, -46.658626] },
+      { nome: "Shopping Vila Olímpia", tipo: "shopping", descricao: "Shopping sofisticado com áreas externas permitidas para pets.", posicao: [-23.595623, -46.686806] },
+      { nome: "Internacional Shopping-Guarulhos", tipo: "shopping", descricao: "Shopping próximo ao aeroporto, com áreas pet-friendly.", posicao: [-23.488373, -46.549114] },
+      { nome: "Plaza Sul Shopping", tipo: "shopping", descricao: "Shopping na zona sul com acesso fácil e estacionamento para pets.", posicao: [-23.619902, -46.626778] },
+      { nome: "Morumbi Shopping", tipo: "shopping", descricao: "Shopping com praça de alimentação e lojas que aceitam pets.", posicao: [-23.623426, -46.698776] },
+      { nome: "Shopping Iguatemi São Paulo", tipo: "shopping", descricao: "Shopping premium com áreas externas pet-friendly.", posicao: [-23.577017, -46.688612] },
+      { nome: "Shopping West Plaza", tipo: "shopping", descricao: "Shopping na marginal com praça de alimentação acessível a pets.", posicao: [-23.527103, -46.674419] },
+      { nome: "Shopping Metrô Tucuruvi", tipo: "shopping", descricao: "Conectado ao metrô, com lojas e praça de alimentação pet-friendly.", posicao: [-23.479486, -46.602345] },
+      { nome: "Shopping Interlagos", tipo: "shopping", descricao: "Shopping na zona sul com estacionamento e áreas permitidas para pets.", posicao: [-23.674683, -46.677668] },
+      { nome: "Shopping Metrô Boulevard Tatuapé", tipo: "shopping", descricao: "Shopping conectado ao metrô, com praça de alimentação pet-friendly.", posicao: [-23.538996, -46.576345] },
+      { nome: "Santana Shopping", tipo: "shopping", descricao: "Shopping na zona norte com acesso fácil e lojas pet-friendly.", posicao: [-23.501083, -46.625675] },
+      { nome: "Shopping Ibirapuera", tipo: "shopping", descricao: "Shopping próximo ao parque, com áreas externas permitidas para pets.", posicao: [-23.610197, -46.666843] },
+      { nome: "Shopping Anália Franco", tipo: "shopping", descricao: "Grande shopping com praça de alimentação e eventos pet-friendly.", posicao: [-23.560511, -46.560112] },
+      { nome: "Shopping Jardim Sul", tipo: "shopping", descricao: "Shopping na zona sul com estacionamento e áreas permitidas para pets.", posicao: [-23.630970, -46.736034] },
+      { nome: "Shopping Cidade Jardim São Paulo", tipo: "shopping", descricao: "Shopping de luxo com áreas externas e restaurantes pet-friendly.", posicao: [-23.568012, -46.704296] },
+      { nome: "Shopping Metrô Santa Cruz", tipo: "shopping", descricao: "Conectado ao metrô, com praça de alimentação acessível a pets.", posicao: [-23.598877, -46.636810] },
+      { nome: "Shopping Sp-Market", tipo: "shopping", descricao: "Shopping com foco em decoração e gastronomia, pets permitidos em áreas externas.", posicao: [-23.678640, -46.698853] },
+      { nome: "Shopping Penha", tipo: "shopping", descricao: "Shopping popular com praça de alimentação pet-friendly.", posicao: [-23.525124, -46.546806] },
+      { nome: "Shopping Metrô Itaquera", tipo: "shopping", descricao: "Próximo ao estádio, com acesso fácil e áreas permitidas para pets.", posicao: [-23.540564, -46.470650] },
+      { nome: "Shopping Pátio Higienópolis", tipo: "shopping", descricao: "Shopping sofisticado no centro, com áreas externas pet-friendly.", posicao: [-23.543043, -46.657547] },
+      { nome: "Shopping Parque da Cidade", tipo: "shopping", descricao: "Shopping com praça de alimentação e lojas que aceitam pets.", posicao: [-23.624552, -46.703888] },
+
+      // === PET DA VILA (em 3 categorias) ===
+      { nome: "Pet da Vila", tipo: "clinica", descricao: "Clínica veterinária completa com atendimento humanizado.", posicao: [-23.543005, -46.484455] },
+      { nome: "Pet da Vila", tipo: "acessorios", descricao: "Loja de acessórios premium para pets: coleiras, roupas, brinquedos e muito mais.", posicao: [-23.543005, -46.484455] },
+      { nome: "Pet da Vila", tipo: "banho-tosa", descricao: "Serviço de banho e tosa com produtos naturais e ambiente tranquilo para seu pet.", posicao: [-23.543005, -46.484455] }
     ];
+
+    // Identifica locais com múltiplas funções (baseado no nome)
+    const multiFunctionLocations = locais.reduce((acc, local) => {
+      acc[local.nome] = (acc[local.nome] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Função para verificar se é multi-função
+    const isMultiFunction = (nome) => multiFunctionLocations[nome] > 1;
 
     // === ADICIONA MARCADORES NO MAPA ===
     function addMarkers(filter) {
@@ -493,9 +563,20 @@
         // Se for "all", mostra todos. Se não, filtra
         if (filter !== 'all' && local.tipo !== filter) return;
 
-        const icon = icons[local.tipo];
+        // Define ícone
+        let icon;
+
+        // Se estiver em "Todos" E o local for multi-função → usa ícone especial
+        if (filter === 'all' && isMultiFunction(local.nome)) {
+          icon = icons.multi;
+        } else {
+          icon = icons[local.tipo];
+        }
+
         const marker = L.marker(local.posicao, { icon }).addTo(map);
-        marker.bindPopup(`
+
+        // Popup com badge extra se for multi-função
+        let popupContent = `
           <strong>${local.nome}</strong><br>
           <small><b>Tipo:</b> ${local.tipo === 'bar-restaurante' ? '🍽️ Bar e Restaurante' : 
                                   local.tipo === 'rodovia-br' ? '🛣️ Rodovia BR' : 
@@ -505,7 +586,14 @@
                                   local.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
                                   '🛍️ Acessórios'}</small><br>
           ${local.descricao}
-        `);
+        `;
+
+        // Adiciona badge se for multi-função
+        if (isMultiFunction(local.nome)) {
+          popupContent += `<br><br><span style="background: #5d3a9b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85rem;">📍 Múltiplos serviços disponíveis</span>`;
+        }
+
+        marker.bindPopup(popupContent);
         markers.push(marker);
       });
     }
@@ -536,6 +624,31 @@
         nome: "Hospital Veterinário Faccioni 24h", 
         tipo: "🏥 Clínica Veterinária", 
         descricao: "Atendimento 24h para emergências com equipamentos modernos." 
+      },
+      { 
+        nome: "Shopping Eldorado", 
+        tipo: "🛒 Shopping", 
+        descricao: "Grande centro comercial com praça de alimentação pet-friendly." 
+      },
+      { 
+        nome: "Shopping Iguatemi São Paulo", 
+        tipo: "🛒 Shopping", 
+        descricao: "Shopping premium com áreas externas pet-friendly." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "🏥 Clínica Veterinária", 
+        descricao: "Atendimento completo e humanizado para seu pet." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "🛍️ Acessórios", 
+        descricao: "Loja com produtos premium para seu pet: roupas, brinquedos e acessórios." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "🛁 Banho & Tosa", 
+        descricao: "Banho e tosa com produtos naturais e ambiente calmo." 
       }
     ];
 
@@ -599,6 +712,31 @@
         nome: "Hospital Veterinário Faccioni 24h", 
         tipo: "clinica", 
         descricao: "Atendimento veterinário de emergência 24h." 
+      },
+      { 
+        nome: "Shopping Villa Lobos", 
+        tipo: "shopping", 
+        descricao: "Áreas externas permitidas e praça de alimentação pet-friendly." 
+      },
+      { 
+        nome: "Shopping Ibirapuera", 
+        tipo: "shopping", 
+        descricao: "Próximo ao parque, ideal para passear com seu pet antes ou depois das compras." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "clinica", 
+        descricao: "Excelente atendimento veterinário em São Paulo." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "acessorios", 
+        descricao: "Melhor loja de acessórios premium para pets da região." 
+      },
+      { 
+        nome: "Pet da Vila", 
+        tipo: "banho-tosa", 
+        descricao: "Banho e tosa com carinho e produtos de qualidade." 
       }
     ];
 
@@ -607,8 +745,7 @@
       container.innerHTML = '';
 
       const filtered = recomendados.filter(item => {
-        // Mapeia "bar-restaurante" para não quebrar
-        if (filter === 'bar-restaurante') return item.tipo === 'rodovia-br'; // ou ajuste conforme necessidade
+        if (filter === 'bar-restaurante') return item.tipo === 'rodovia-br';
         return filter === 'all' || item.tipo === filter;
       });
 
