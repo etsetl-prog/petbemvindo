@@ -52,21 +52,16 @@
       max-width: 1200px;
       margin: 1.5rem auto;
       padding: 0 1rem;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-    }
-
-    .filters-container::-webkit-scrollbar {
-      display: none;
     }
 
     .filters {
-      display: inline-flex;
-      gap: 10px;
+      display: flex;
+      flex-wrap: wrap; /* Permite que os botões quebrem linha */
+      gap: 10px; /* Espaçamento uniforme entre botões */
+      justify-content: center; /* Centraliza os botões */
       background: white;
       border-radius: 50px;
-      padding: 8px 12px;
+      padding: 16px 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
@@ -82,6 +77,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap; /* Impede que o texto quebre */
     }
 
     .filter-btn.active {
@@ -225,10 +221,11 @@
     /* ==================== */
     .recommend-filters {
       display: flex;
+      flex-wrap: wrap; /* Responsivo */
       justify-content: center;
       gap: 10px;
       margin-bottom: 1rem;
-      flex-wrap: wrap;
+      padding: 0 1rem;
     }
 
     .filter-reco {
@@ -239,6 +236,7 @@
       font-size: 0.95rem;
       color: #4a5568;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .filter-reco.active {
@@ -251,6 +249,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1rem;
+      padding: 0 1rem;
     }
 
     .recommend-card {
@@ -354,6 +353,7 @@
       <button class="filter-btn" data-filter="clinica">🏥 Clínicas</button>
       <button class="filter-btn" data-filter="banho-tosa">🛁 Banho & Tosa</button>
       <button class="filter-btn" data-filter="acessorios">🛍️ Acessórios</button>
+      <button class="filter-btn" data-filter="laboratorio">🔬 Laboratório</button>
     </div>
   </div>
 
@@ -391,6 +391,7 @@
       <button class="filter-reco" data-reco="clinica">🏥 Clínicas</button>
       <button class="filter-reco" data-reco="banho-tosa">🛁 Banho & Tosa</button>
       <button class="filter-reco" data-reco="acessorios">🛍️ Acessórios</button>
+      <button class="filter-reco" data-reco="laboratorio">🔬 Laboratório</button>
     </div>
 
     <div class="recommendations" id="recommendations-list">
@@ -461,21 +462,74 @@
         iconAnchor: [18, 36],
         popupAnchor: [0, -36]
       }),
-      multi: L.divIcon({
+      laboratorio: L.divIcon({
         className: 'custom-marker',
-        html: `
-          <div class="marker-emoji marker-multi" style="background: #5d3a9b; font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding: 2px;">
-            <div style="grid-column: 1; grid-row: 1; justify-self: center; align-self: center;">🏥</div>
-            <div style="grid-column: 2; grid-row: 1; justify-self: center; align-self: center;">🛍️</div>
-            <div style="grid-column: 1; grid-row: 2; justify-self: center; align-self: center;">🛁</div>
-            <div style="grid-column: 2; grid-row: 2;"></div>
-          </div>
-        `,
+        html: `<div class="marker-emoji" style="background: #3b5998;">🔬</div>`,
         iconSize: [36, 36],
         iconAnchor: [18, 36],
         popupAnchor: [0, -36]
       })
     };
+
+    // Função para gerar ícone multi-função dinâmico com base nos tipos do local
+    function createMultiIcon(tipos) {
+      // Mapeia tipos para emojis
+      const emojiMap = {
+        'bar-restaurante': '🍽️',
+        'rodovia-br': '🛣️',
+        'shopping': '🛒',
+        'hotel': '🛏️',
+        'clinica': '🏥',
+        'banho-tosa': '🛁',
+        'acessorios': '🛍️',
+        'laboratorio': '🔬'
+      };
+
+      // Coleta emojis dos tipos fornecidos
+      const emojis = tipos.map(t => emojiMap[t]).filter(e => e);
+
+      // Define layout dinâmico
+      let gridTemplateColumns = '1fr';
+      let gridTemplateRows = '1fr';
+      let padding = '6px';
+
+      if (emojis.length === 2) {
+        gridTemplateColumns = '1fr 1fr';
+        gridTemplateRows = '1fr';
+        padding = '4px';
+      } else if (emojis.length >= 3) {
+        gridTemplateColumns = '1fr 1fr';
+        gridTemplateRows = '1fr 1fr';
+        padding = '2px';
+      }
+
+      // Monta os elementos de grid
+      let innerHTML = '';
+      emojis.forEach((emoji, index) => {
+        innerHTML += `<div style="justify-self: center; align-self: center;">${emoji}</div>`;
+      });
+
+      // Retorna o ícone Leaflet personalizado
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div class="marker-emoji marker-multi" style="
+            background: #5d3a9b;
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: ${gridTemplateColumns};
+            grid-template-rows: ${gridTemplateRows};
+            padding: ${padding};
+            gap: 2px;
+          ">
+            ${innerHTML}
+          </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      });
+    }
 
     // === MAPA ===
     const map = L.map('map').setView([-23.39, -46.3], 10);
@@ -487,22 +541,37 @@
 
     // === LOCAIS (com nova classificação) ===
     const locais = [
+      // Chalé da Pamonha — DUAS ENTRADAS: rodovia-br E bar-restaurante
       {
         nome: "Chalé da Pamonha",
         tipo: "rodovia-br",
-        descricao: "Restaurante pet-friendly na Rodovia Presidente Dutra. Área externa ampla, cardápio especial para pets.",
+        descricao: "Restaurante pet-friendly na Rodovia Presidente Dutra. Área externa ampla, cardápio especial para pets.<br><br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 227, Guarulhos - SP",
+        posicao: [-23.377615, -46.251841]
+      },
+      {
+        nome: "Chalé da Pamonha",
+        tipo: "bar-restaurante",
+        descricao: "Restaurante pet-friendly na Rodovia Presidente Dutra. Área externa ampla, cardápio especial para pets.<br><br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 227, Guarulhos - SP",
         posicao: [-23.377615, -46.251841]
       },
       {
         nome: "Chalé da Pamonha",
         tipo: "rodovia-br",
-        descricao: "Unidade na pista sentido São Paulo. Área de descanso com grama e bebedouro.",
+        descricao: "Unidade na pista sentido São Paulo. Área de descanso com grama e bebedouro.<br><br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 230, Guarulhos - SP",
         posicao: [-23.387054, -46.273241]
       },
       {
+        nome: "Chalé da Pamonha",
+        tipo: "bar-restaurante",
+        descricao: "Unidade na pista sentido São Paulo. Área de descanso com grama e bebedouro.<br><br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 230, Guarulhos - SP",
+        posicao: [-23.387054, -46.273241]
+      },
+
+      // Hospital Veterinário Faccioni 24h
+      {
         nome: "Hospital Veterinário Faccioni 24h",
         tipo: "clinica",
-        descricao: "Clínica veterinária de emergência com atendimento 24h para pets.",
+        descricao: "Clínica veterinária de emergência com atendimento 24h para pets.<br><br><strong>📍 Endereço:</strong> Rua Damianopolis 408, Guarulhos, SP, 07070-111.",
         posicao: [-23.451796, -46.559491]
       },
 
@@ -540,9 +609,25 @@
       { nome: "Shopping Parque da Cidade", tipo: "shopping", descricao: "Shopping com praça de alimentação e lojas que aceitam pets.", posicao: [-23.624552, -46.703888] },
 
       // === PET DA VILA (em 3 categorias) ===
-      { nome: "Pet da Vila", tipo: "clinica", descricao: "Clínica veterinária completa com atendimento humanizado.", posicao: [-23.543005, -46.484455] },
-      { nome: "Pet da Vila", tipo: "acessorios", descricao: "Loja de acessórios premium para pets: coleiras, roupas, brinquedos e muito mais.", posicao: [-23.543005, -46.484455] },
-      { nome: "Pet da Vila", tipo: "banho-tosa", descricao: "Serviço de banho e tosa com produtos naturais e ambiente tranquilo para seu pet.", posicao: [-23.543005, -46.484455] }
+      {
+        nome: "Pet da Vila",
+        tipo: "clinica",
+        descricao: "Clínica veterinária completa com atendimento humanizado.<br><br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050",
+        posicao: [-23.543005, -46.484455]
+      },
+      {
+        nome: "Pet da Vila",
+        tipo: "acessorios",
+        descricao: "Loja de acessórios premium para pets: coleiras, roupas, brinquedos e muito mais.<br><br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050",
+        posicao: [-23.543005, -46.484455]
+      },
+      {
+        nome: "Pet da Vila",
+        tipo: "banho-tosa",
+        descricao: "Serviço de banho e tosa com produtos naturais e ambiente tranquilo para seu pet.<br><br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050",
+        posicao: [-23.543005, -46.484455]
+      }
+      // ❌ Laboratório removido conforme solicitado
     ];
 
     // Identifica locais com múltiplas funções (baseado no nome)
@@ -553,6 +638,27 @@
 
     // Função para verificar se é multi-função
     const isMultiFunction = (nome) => multiFunctionLocations[nome] > 1;
+
+    // Função para pegar todos os tipos de um local pelo nome
+    function getTiposByNome(nome) {
+      const tipos = [...new Set(locais
+        .filter(local => local.nome === nome)
+        .map(local => local.tipo)
+      )];
+      return tipos.map(tipo => {
+        switch(tipo) {
+          case 'bar-restaurante': return '🍽️ Bar e Restaurante';
+          case 'rodovia-br': return '🛣️ Rodovia BR';
+          case 'shopping': return '🛒 Shopping';
+          case 'hotel': return '🛏️ Hotel / Pousada';
+          case 'clinica': return '🏥 Clínica';
+          case 'banho-tosa': return '🛁 Banho & Tosa';
+          case 'acessorios': return '🛍️ Acessórios';
+          case 'laboratorio': return '🔬 Laboratório';
+          default: return tipo;
+        }
+      }).join(', ');
+    }
 
     // === ADICIONA MARCADORES NO MAPA ===
     function addMarkers(filter) {
@@ -566,25 +672,38 @@
         // Define ícone
         let icon;
 
-        // Se estiver em "Todos" E o local for multi-função → usa ícone especial
+        // Se estiver em "Todos" E o local for multi-função → gera ícone dinâmico
         if (filter === 'all' && isMultiFunction(local.nome)) {
-          icon = icons.multi;
+          // Coleta todos os tipos únicos desse local
+          const tipos = [...new Set(locais
+            .filter(l => l.nome === local.nome)
+            .map(l => l.tipo)
+          )];
+          icon = createMultiIcon(tipos);
         } else {
           icon = icons[local.tipo];
         }
 
         const marker = L.marker(local.posicao, { icon }).addTo(map);
 
-        // Popup com badge extra se for multi-função
+        // Popup: mostra todos os tipos se for multi-função e estiver em "Todos"
+        let tipoExibido = local.tipo;
+        if (filter === 'all' && isMultiFunction(local.nome)) {
+          tipoExibido = getTiposByNome(local.nome);
+        } else {
+          tipoExibido = tipoExibido === 'bar-restaurante' ? '🍽️ Bar e Restaurante' :
+                        tipoExibido === 'rodovia-br' ? '🛣️ Rodovia BR' :
+                        tipoExibido === 'shopping' ? '🛒 Shopping' :
+                        tipoExibido === 'hotel' ? '🛏️ Hotel / Pousada' :
+                        tipoExibido === 'clinica' ? '🏥 Clínica' :
+                        tipoExibido === 'banho-tosa' ? '🛁 Banho & Tosa' :
+                        tipoExibido === 'acessorios' ? '🛍️ Acessórios' :
+                        '🔬 Laboratório';
+        }
+
         let popupContent = `
           <strong>${local.nome}</strong><br>
-          <small><b>Tipo:</b> ${local.tipo === 'bar-restaurante' ? '🍽️ Bar e Restaurante' : 
-                                  local.tipo === 'rodovia-br' ? '🛣️ Rodovia BR' : 
-                                  local.tipo === 'shopping' ? '🛒 Shopping' : 
-                                  local.tipo === 'hotel' ? '🛏️ Hotel / Pousada' : 
-                                  local.tipo === 'clinica' ? '🏥 Clínica' : 
-                                  local.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
-                                  '🛍️ Acessórios'}</small><br>
+          <small><b>Tipo:</b> ${tipoExibido}</small><br>
           ${local.descricao}
         `;
 
@@ -612,18 +731,18 @@
     const places = [
       { 
         nome: "Chalé da Pamonha", 
-        tipo: "🍽️ Bar e Restaurante", 
-        descricao: "Ambiente externo com cardápio especial para pets." 
+        tipo: "🍽️ Bar e Restaurante, 🛣️ Rodovia BR", 
+        descricao: "Ambiente externo com cardápio especial para pets.<br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 227, Guarulhos - SP" 
       },
       { 
         nome: "Chalé da Pamonha", 
-        tipo: "🍽️ Bar e Restaurante", 
-        descricao: "Área de descanso com grama e bebedouro." 
+        tipo: "🍽️ Bar e Restaurante, 🛣️ Rodovia BR", 
+        descricao: "Área de descanso com grama e bebedouro.<br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 230, Guarulhos - SP" 
       },
       { 
         nome: "Hospital Veterinário Faccioni 24h", 
         tipo: "🏥 Clínica Veterinária", 
-        descricao: "Atendimento 24h para emergências com equipamentos modernos." 
+        descricao: "Atendimento 24h para emergências com equipamentos modernos.<br><strong>📍 Endereço:</strong> Rua Damianopolis 408, Guarulhos, SP, 07070-111." 
       },
       { 
         nome: "Shopping Eldorado", 
@@ -637,18 +756,8 @@
       },
       { 
         nome: "Pet da Vila", 
-        tipo: "🏥 Clínica Veterinária", 
-        descricao: "Atendimento completo e humanizado para seu pet." 
-      },
-      { 
-        nome: "Pet da Vila", 
-        tipo: "🛍️ Acessórios", 
-        descricao: "Loja com produtos premium para seu pet: roupas, brinquedos e acessórios." 
-      },
-      { 
-        nome: "Pet da Vila", 
-        tipo: "🛁 Banho & Tosa", 
-        descricao: "Banho e tosa com produtos naturais e ambiente calmo." 
+        tipo: "🏥 Clínica, 🛁 Banho & Tosa, 🛍️ Acessórios", 
+        descricao: "Completo atendimento para seu pet.<br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050" 
       }
     ];
 
@@ -700,18 +809,18 @@
     const recomendados = [
       { 
         nome: "Chalé da Pamonha", 
-        tipo: "rodovia-br", 
-        descricao: "Ambiente externo pet-friendly com cardápio especial." 
+        tipo: "bar-restaurante", 
+        descricao: "Ambiente externo pet-friendly com cardápio especial.<br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 227, Guarulhos - SP" 
       },
       { 
         nome: "Chalé da Pamonha", 
         tipo: "rodovia-br", 
-        descricao: "Área de descanso com grama e bebedouro." 
+        descricao: "Área de descanso com grama e bebedouro.<br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 230, Guarulhos - SP" 
       },
       { 
         nome: "Hospital Veterinário Faccioni 24h", 
         tipo: "clinica", 
-        descricao: "Atendimento veterinário de emergência 24h." 
+        descricao: "Atendimento veterinário de emergência 24h.<br><strong>📍 Endereço:</strong> Rua Damianopolis 408, Guarulhos, SP, 07070-111." 
       },
       { 
         nome: "Shopping Villa Lobos", 
@@ -726,17 +835,17 @@
       { 
         nome: "Pet da Vila", 
         tipo: "clinica", 
-        descricao: "Excelente atendimento veterinário em São Paulo." 
+        descricao: "Excelente atendimento veterinário em São Paulo.<br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050" 
       },
       { 
         nome: "Pet da Vila", 
         tipo: "acessorios", 
-        descricao: "Melhor loja de acessórios premium para pets da região." 
+        descricao: "Melhor loja de acessórios premium para pets da região.<br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050" 
       },
       { 
         nome: "Pet da Vila", 
         tipo: "banho-tosa", 
-        descricao: "Banho e tosa com carinho e produtos de qualidade." 
+        descricao: "Banho e tosa com carinho e produtos de qualidade.<br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050" 
       }
     ];
 
@@ -745,7 +854,7 @@
       container.innerHTML = '';
 
       const filtered = recomendados.filter(item => {
-        if (filter === 'bar-restaurante') return item.tipo === 'rodovia-br';
+        if (filter === 'bar-restaurante') return item.tipo === 'rodovia-br' || item.tipo === 'bar-restaurante';
         return filter === 'all' || item.tipo === filter;
       });
 
@@ -755,18 +864,19 @@
       }
 
       filtered.forEach(item => {
+        const tipoExibido = item.tipo === 'bar-restaurante' || item.tipo === 'rodovia-br' ? '🍽️ Bar e Restaurante, 🛣️ Rodovia BR' : 
+                           item.tipo === 'shopping' ? '🛒 Shopping' : 
+                           item.tipo === 'hotel' ? '🛏️ Hotel / Pousada' : 
+                           item.tipo === 'clinica' ? '🏥 Clínica' : 
+                           item.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
+                           item.tipo === 'acessorios' ? '🛍️ Acessórios' :
+                           '🔬 Laboratório';
+
         const card = document.createElement('div');
         card.className = 'recommend-card';
         card.innerHTML = `
           <div class="recommend-name">${item.nome}</div>
-          <div class="recommend-type">
-            ${item.tipo === 'bar-restaurante' || item.tipo === 'rodovia-br' ? '🍽️ Bar e Restaurante' : 
-              item.tipo === 'shopping' ? '🛒 Shopping' : 
-              item.tipo === 'hotel' ? '🛏️ Hotel / Pousada' : 
-              item.tipo === 'clinica' ? '🏥 Clínica' : 
-              item.tipo === 'banho-tosa' ? '🛁 Banho & Tosa' : 
-              '🛍️ Acessórios'}
-          </div>
+          <div class="recommend-type">${tipoExibido}</div>
           <div class="recommend-desc">${item.descricao}</div>
         `;
         container.appendChild(card);
