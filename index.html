@@ -11,6 +11,9 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""/>
 
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script defer data-domain="petbemvindo.com.br" src="https://plausible.io/js/script.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -56,9 +59,9 @@
 
     .filters {
       display: flex;
-      flex-wrap: wrap; /* Permite que os botões quebrem linha */
-      gap: 10px; /* Espaçamento uniforme entre botões */
-      justify-content: center; /* Centraliza os botões */
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
       background: white;
       border-radius: 50px;
       padding: 16px 12px;
@@ -77,7 +80,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      white-space: nowrap; /* Impede que o texto quebre */
+      white-space: nowrap;
     }
 
     .filter-btn.active {
@@ -221,7 +224,7 @@
     /* ==================== */
     .recommend-filters {
       display: flex;
-      flex-wrap: wrap; /* Responsivo */
+      flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
       margin-bottom: 1rem;
@@ -323,7 +326,6 @@
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
     }
 
-    /* ANIMAÇÃO PARA ÍCONE MULTI-FUNÇÃO */
     .marker-multi {
       animation: pulse 2s infinite ease-in-out;
     }
@@ -473,7 +475,6 @@
 
     // Função para gerar ícone multi-função dinâmico com base nos tipos do local
     function createMultiIcon(tipos) {
-      // Mapeia tipos para emojis
       const emojiMap = {
         'bar-restaurante': '🍽️',
         'rodovia-br': '🛣️',
@@ -485,10 +486,8 @@
         'laboratorio': '🔬'
       };
 
-      // Coleta emojis dos tipos fornecidos
       const emojis = tipos.map(t => emojiMap[t]).filter(e => e);
 
-      // Define layout dinâmico
       let gridTemplateColumns = '1fr';
       let gridTemplateRows = '1fr';
       let padding = '6px';
@@ -503,13 +502,11 @@
         padding = '2px';
       }
 
-      // Monta os elementos de grid
       let innerHTML = '';
       emojis.forEach((emoji, index) => {
         innerHTML += `<div style="justify-self: center; align-self: center;">${emoji}</div>`;
       });
 
-      // Retorna o ícone Leaflet personalizado
       return L.divIcon({
         className: 'custom-marker',
         html: `
@@ -541,7 +538,6 @@
 
     // === LOCAIS (com nova classificação) ===
     const locais = [
-      // Chalé da Pamonha — DUAS ENTRADAS: rodovia-br E bar-restaurante
       {
         nome: "Chalé da Pamonha",
         tipo: "rodovia-br",
@@ -566,16 +562,12 @@
         descricao: "Unidade na pista sentido São Paulo. Área de descanso com grama e bebedouro.<br><br><strong>📍 Endereço:</strong> Rod. Pres. Dutra, km 230, Guarulhos - SP",
         posicao: [-23.387054, -46.273241]
       },
-
-      // Hospital Veterinário Faccioni 24h
       {
         nome: "Hospital Veterinário Faccioni 24h",
         tipo: "clinica",
         descricao: "Clínica veterinária de emergência com atendimento 24h para pets.<br><br><strong>📍 Endereço:</strong> Rua Damianopolis 408, Guarulhos, SP, 07070-111.",
         posicao: [-23.451796, -46.559491]
       },
-
-      // === NOVOS SHOPS ===
       { nome: "Shopping Cidade Jardim", tipo: "shopping", descricao: "Shopping pet-friendly com praça de alimentação e áreas externas.", posicao: [-23.568044, -46.704308] },
       { nome: "Metro Tatuape Magazine", tipo: "shopping", descricao: "Centro comercial com acesso fácil e espaço para pets.", posicao: [-23.541683, -46.576727] },
       { nome: "Shopping Light", tipo: "shopping", descricao: "Local histórico com lojas e praça de alimentação pet-friendly.", posicao: [-23.546665, -46.638713] },
@@ -607,8 +599,6 @@
       { nome: "Shopping Metrô Itaquera", tipo: "shopping", descricao: "Próximo ao estádio, com acesso fácil e áreas permitidas para pets.", posicao: [-23.540564, -46.470650] },
       { nome: "Shopping Pátio Higienópolis", tipo: "shopping", descricao: "Shopping sofisticado no centro, com áreas externas pet-friendly.", posicao: [-23.543043, -46.657547] },
       { nome: "Shopping Parque da Cidade", tipo: "shopping", descricao: "Shopping com praça de alimentação e lojas que aceitam pets.", posicao: [-23.624552, -46.703888] },
-
-      // === PET DA VILA (em 3 categorias) ===
       {
         nome: "Pet da Vila",
         tipo: "clinica",
@@ -627,19 +617,15 @@
         descricao: "Serviço de banho e tosa com produtos naturais e ambiente tranquilo para seu pet.<br><br><strong>📍 Endereço:</strong> Rua Maria Eugênia Celso, 173, Artur Alvim, São Paulo - SP, 03568-050",
         posicao: [-23.543005, -46.484455]
       }
-      // ❌ Laboratório removido conforme solicitado
     ];
 
-    // Identifica locais com múltiplas funções (baseado no nome)
     const multiFunctionLocations = locais.reduce((acc, local) => {
       acc[local.nome] = (acc[local.nome] || 0) + 1;
       return acc;
     }, {});
 
-    // Função para verificar se é multi-função
     const isMultiFunction = (nome) => multiFunctionLocations[nome] > 1;
 
-    // Função para pegar todos os tipos de um local pelo nome
     function getTiposByNome(nome) {
       const tipos = [...new Set(locais
         .filter(local => local.nome === nome)
@@ -660,21 +646,15 @@
       }).join(', ');
     }
 
-    // === ADICIONA MARCADORES NO MAPA ===
     function addMarkers(filter) {
       markers.forEach(m => m.remove());
       markers = [];
 
       locais.forEach(local => {
-        // Se for "all", mostra todos. Se não, filtra
         if (filter !== 'all' && local.tipo !== filter) return;
 
-        // Define ícone
         let icon;
-
-        // Se estiver em "Todos" E o local for multi-função → gera ícone dinâmico
         if (filter === 'all' && isMultiFunction(local.nome)) {
-          // Coleta todos os tipos únicos desse local
           const tipos = [...new Set(locais
             .filter(l => l.nome === local.nome)
             .map(l => l.tipo)
@@ -686,7 +666,6 @@
 
         const marker = L.marker(local.posicao, { icon }).addTo(map);
 
-        // Popup: mostra todos os tipos se for multi-função e estiver em "Todos"
         let tipoExibido = local.tipo;
         if (filter === 'all' && isMultiFunction(local.nome)) {
           tipoExibido = getTiposByNome(local.nome);
@@ -707,7 +686,6 @@
           ${local.descricao}
         `;
 
-        // Adiciona badge se for multi-função
         if (isMultiFunction(local.nome)) {
           popupContent += `<br><br><span style="background: #5d3a9b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85rem;">📍 Múltiplos serviços disponíveis</span>`;
         }
@@ -717,7 +695,6 @@
       });
     }
 
-    // === FILTROS DO MAPA ===
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -727,7 +704,6 @@
       });
     });
 
-    // === LUGARES AMIGOS (com Like/Dislike) ===
     const places = [
       { 
         nome: "Chalé da Pamonha", 
@@ -783,7 +759,6 @@
         container.appendChild(card);
       });
 
-      // Eventos de curtida
       document.querySelectorAll('.btn-like').forEach(btn => {
         btn.addEventListener('click', function () {
           const index = this.getAttribute('data-index');
@@ -805,7 +780,6 @@
       });
     }
 
-    // === RECOMENDADOS ===
     const recomendados = [
       { 
         nome: "Chalé da Pamonha", 
@@ -883,7 +857,6 @@
       });
     }
 
-    // Eventos dos filtros de recomendados
     document.querySelectorAll('.filter-reco').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-reco').forEach(b => b.classList.remove('active'));
@@ -893,7 +866,6 @@
       });
     });
 
-    // Inicializa tudo
     addMarkers('all');
     renderPlaces();
     renderRecomendados('all');
